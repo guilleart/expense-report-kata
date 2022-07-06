@@ -1,0 +1,9 @@
+Expense Type|Amount|Exceeds amount?
+Breakfast|123|false
+Dinner|123|false
+Breakfast|5000|true
+Breakfast|312|false
+Dinner|50012|true
+Dinner|414|false
+Unknown|400|
+Unknown|5009|
