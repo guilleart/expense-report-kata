@@ -21,8 +21,9 @@ class ExpenseTrackerCLI < Thor
     say("1) Add a expense")
     say("2) Print report")
     say("3) Save report as .csv")
-    say("4) Exit")
-    option = ask("Option?", limited_to: %w(1 2 3 4) )
+    say("4) Clear expenses")
+    say("5) Exit")
+    option = ask("Option?", limited_to: %w(1 2 3 4 5) )
 
     case option
     when "1"
@@ -32,6 +33,8 @@ class ExpenseTrackerCLI < Thor
     when "3"
       handle_report_export
     when "4"
+      clear_expenses
+    when "5"
       exit
     end
   end
@@ -68,6 +71,12 @@ class ExpenseTrackerCLI < Thor
   def handle_report_export
     path = ask("Please specify a path to store the report", path: true, default: 'report.csv')
     ReportExporter.new(path, expenses, '|', "\n", '\'').generate_csv
+
+    main_loop
+  end
+
+  def clear_expenses
+    @expenses = []
 
     main_loop
   end
