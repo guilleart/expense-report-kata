@@ -9,63 +9,77 @@ end
 RSpec.describe ReportPrinter do
   before{subject = ReportPrinter.new}
 
-  # No expenses
-  it "print report with no expenses, prints a timestamp" do
-    expenses = []
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Expenses: #{Time.now}/).to_stdout
-  end
-  it "print report with no expenses, prints meal expenses in 0" do
-    expenses = []
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Meal Expenses: 0/).to_stdout
-  end
-  it "print report with no expenses, prints total expenses in 0" do
-    expenses = []
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Total Expenses: 0/).to_stdout
+  context "#print_report" do
+    let(:expenses) { [] }
+    it "prints a timestamp" do
+      expect do
+        subject.print_report(*expenses)
+      end.to output(/#{Time.now}/).to_stdout
+    end
+
+    it "print meal expenses" do
+      expect do
+        subject.print_report(*expenses)
+      end.to output(/Meal Expenses:/).to_stdout
+    end
+
+    it "print total expenses" do
+      expect do
+        subject.print_report(*expenses)
+      end.to output(/Total Expenses:/).to_stdout
+    end
+
+    context "with breakfast expense" do
+      let(:expenses) { [ Expense.new(:breakfast, 25) ] }
+
+      it "prints breakfast" do
+        expect do
+          subject.print_report(*expenses)
+        end.to output(/Breakfast/).to_stdout
+      end
+
+      it "does not print over expense marker (X) for less than 1000 in breakfast" do
+        expect do
+          subject.print_report(*expenses)
+        end.not_to output(/Breakfast.*X/).to_stdout
+      end
+
+      context "when overexpend" do
+        let(:expenses) { [ Expense.new(:breakfast, 1001) ] }
+
+        it "prints over expense marker" do
+          expect do
+            subject.print_report(*expenses)
+          end.to output(/Breakfast.*X/).to_stdout
+        end
+      end
+    end
+
+    context "with dinner expense" do
+      let(:expenses) { [ Expense.new(:dinner, 2) ] }
+
+      it "prints dinner" do
+        expect do
+          subject.print_report(*expenses)
+        end.to output(/Dinner/).to_stdout
+      end
+
+      it "does not print over expense marker (X) for less than 5000 in dinner" do
+        expenses = [ Expense.new(:dinner, 4991) ]
+        expect do
+          subject.print_report(*expenses)
+        end.not_to output(/Dinner.*X/).to_stdout
+      end
+
+      it "print report with breakfast, prints over expense marker (X) for over 5000 in dinner" do
+        expenses = [ Expense.new(:dinner, 5001) ]
+        expect do
+          subject.print_report(*expenses)
+        end.to output(/Dinner.*X/).to_stdout
+      end
+    end
   end
 
-  #Only breakfast
-  it "print report with breakfast, prints a timestamp" do
-    expenses = [ Expense.new(:breakfast, 2) ]
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Expenses: #{Time.now}/).to_stdout
-  end
-  it "print report with breakfast, prints 25 for breakfast" do
-    expenses = [ Expense.new(:breakfast, 25) ]
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Breakfast.*25/).to_stdout
-  end
-  it "print report with breakfast, does not print over expense marker (X) for less than 1000 in breakfast" do
-    expenses = [ Expense.new(:breakfast, 999) ]
-    expect do
-      subject.print_report(*expenses)
-    end.not_to output(/Breakfast.*X/).to_stdout
-  end
-  it "print report with breakfast, prints over expense marker (X) for over 1000 in breakfast" do
-    expenses = [ Expense.new(:breakfast, 1001) ]
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Breakfast.*X/).to_stdout
-  end
-  it "print report with breakfast, prints the correct total 25 for meals" do
-    expenses = [ Expense.new(:breakfast, 25) ]
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Meal Expenses: 25/).to_stdout
-  end
-  it "print report with breakfast, prints the correct final total 32" do
-    expneses = [ Expense.new(:breakfast, 32) ]
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Total Expenses: 32/).to_stdout
-  end
 
   #Only dinner
   it "print report with dinner, prints a timestamp" do
@@ -80,18 +94,7 @@ RSpec.describe ReportPrinter do
       subject.print_report(*expenses)
     end.to output(/Dinner.*14/).to_stdout
   end
-  it "print report with dinner, does not print over expense marker (X) for less than 5000 in dinner" do
-    expenses = [ Expense.new(:dinner, 4991) ]
-    expect do
-      subject.print_report(*expenses)
-    end.not_to output(/Dinner.*X/).to_stdout
-  end
-  it "print report with breakfast, prints over expense marker (X) for over 5000 in dinner" do
-    expenses = [ Expense.new(:dinner, 5001) ]
-    expect do
-      subject.print_report(*expenses)
-    end.to output(/Dinner.*X/).to_stdout
-  end
+
   it "print report with dinner, prints the correct total 34 for meals" do
     expenses = [ Expense.new(:dinner, 34) ]
     expect do
